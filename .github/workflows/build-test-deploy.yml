@@ -4,23 +4,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps: 
-      - name: checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v3
-      - name: use node.js
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-      - run: npm install
+          cache: 'npm'  # Habilita cache de dependências
+      - run: npm ci
       - run: npm run build 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: dist/  # Ajuste para o diretório de saída do seu build
+
   test: 
     needs: build
     runs-on: ubuntu-latest
     steps: 
-      - name: checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v3
-      - name: use node.js
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: dist/  # Mesmo caminho usado no upload
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-      - run: npm install
+          cache: 'npm'
+      - run: npm ci
       - run: npm test
